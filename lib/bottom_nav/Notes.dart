@@ -1,6 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:notepad/models/notess.dart';
+import 'package:intl/intl.dart';
+
+import '../NoteRepository.dart';
 
 class Notes extends StatefulWidget {
   const Notes({super.key});
@@ -11,6 +14,7 @@ class Notes extends StatefulWidget {
 
 class _NotesState extends State<Notes> {
   final _searchcontroller = TextEditingController();
+  List _notes = [];
 
   @override
   Widget build(BuildContext context) {
@@ -81,87 +85,146 @@ class _NotesState extends State<Notes> {
               SizedBox(height: 10,),
               Expanded(
                 child:
-                ListView.builder(
-                  itemCount: notess.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Container(
-                        height: 120,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                            color: Colors.grey.shade900,
-                            borderRadius: BorderRadius.circular(15)
+                FutureBuilder(
+                  future: Noterepository.getNotes(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState==ConnectionState.done){
+                      if (snapshot.data == null || snapshot.data!.isEmpty){
+                        return const Center(
+                          child: Text('Empty'),
+                        );
+                      }
+                      _notes = snapshot.data!;
+                      return ListView(
+                        padding: EdgeInsets.all(15),
+                        children: [
+                          for(var note in _notes)
+                            NoteContainer(notess: note,)
+                        ],
+                      );
+                    }
+                    // else {
+                    //   return Center(
+                    //     child: CircularProgressIndicator(),
+                    //   );
+                    // }
+                    return const SizedBox();
+                  },
+                )
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class NoteContainer extends StatelessWidget {
+
+  final Notess notess;
+
+  const NoteContainer({
+    super.key, required this.notess
+  });
+
+  @override
+  Widget build(BuildContext context) {
+
+    final DateFormat dateFormat = DateFormat('yyyy-MM-dd');
+    final DateFormat timeFormat = DateFormat('HH:mm');
+
+
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        height: 120,
+        width: double.infinity,
+        decoration: BoxDecoration(
+            color: Colors.grey.shade900,
+            borderRadius: BorderRadius.circular(15)
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+              horizontal: 10.0, vertical: 15),
+          child: Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      notess.title,
+                      style: TextStyle(
+                        fontSize: 24,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        // No need to specify fontStyle if it's normal
+                      ),
+                    ),
+                    // Combine the two Text widgets in the first Row into one for better readability
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_month,
+                          size: 10,
+                          color: Colors.white,
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10.0, vertical: 15),
-                          child: Stack(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      notess[index].title,
-                                      style: TextStyle(
-                                        fontSize: 24,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontStyle: FontStyle.normal,
-                                      ),
-                                    ),
-                                    Row(
-                                      children: [
-                                        Text(
-                                          notess[index].date + ',  ',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.grey,
-                                            fontWeight: FontWeight.bold,
-                                            fontStyle: FontStyle.normal,
-                                          ),
-                                        ),
-                                        Text(
-                                          notess[index].time,
-                                          style: TextStyle(
-                                            fontSize: 15,
-                                            color: Colors.grey,
-                                            fontWeight: FontWeight.bold,
-                                            fontStyle: FontStyle.normal,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.file_copy_outlined,
-                                          size: 12,
-                                          color: Colors.grey,
-                                        ),
-                                        Text(
-                                          ' ' + notess[index].categories,
-                                          style: TextStyle(
-                                            fontSize: 15,
-                                            color: Colors.grey,
-                                            fontWeight: FontWeight.bold,
-                                            fontStyle: FontStyle.normal,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
+                        SizedBox(
+                          width: 5,
+                        ),
+                        Text(
+                           DateFormat(DateFormat.YEAR_ABBR_MONTH_WEEKDAY_DAY).format(notess.createdAt),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      ),
-                    );
-                  },),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        Icon(
+                          Icons.timer,
+                          size: 10,
+                          color: Colors.white,
+                        ),
+                        SizedBox(
+                          width: 5,
+                        ),
+                        Text(
+                           DateFormat(DateFormat.HOUR_MINUTE_SECOND).format(notess.createdAt),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.file_copy_outlined,
+                          size: 12,
+                          color: Colors.grey,
+                        ),
+                        SizedBox(width: 4), // Add some spacing between the icon and text
+                        Text(
+                          notess.categories, // No need to add a space in the beginning
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: Colors.grey,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

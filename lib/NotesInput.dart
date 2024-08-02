@@ -1,15 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:notepad/HomePage.dart';
+import 'package:notepad/NoteRepository.dart';
 import 'package:notepad/bottom_nav/Notes.dart';
+import 'models/notess.dart';
 
-class Notesinput extends StatelessWidget {
-  const Notesinput({super.key});
+class Notesinput extends StatefulWidget {
+   Notesinput({super.key});
+
+  @override
+  State<Notesinput> createState() => _NotesinputState();
+}
+
+class _NotesinputState extends State<Notesinput> {
+  final _notesController = TextEditingController();
+
+  final _titleController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    final _notesController = TextEditingController();
-    final _titleController = TextEditingController();
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -37,10 +46,14 @@ class Notesinput extends StatelessWidget {
             padding: const EdgeInsets.only(right: 8.0),
             child: GestureDetector(
               onTap: () {
-                String title = _titleController.text;
-                String note = _notesController.text;
+                _insertNotes();
+                // String title = _titleController.text;
+                // String note = _notesController.text;
                 Navigator.pushReplacement(
-                    context, MaterialPageRoute(builder: (_) => Notes()));
+                    context, MaterialPageRoute(builder: (_) => Homepage()));
+                setState(() {
+
+                });
               },
               child: Text(
                 'Save',
@@ -91,5 +104,15 @@ class Notesinput extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  _insertNotes()async{
+    final notess = Notess(
+      id: null,
+      title: _titleController.text,
+      categories: _notesController.text,
+      createdAt : DateTime.now(),
+    );
+    await Noterepository.insert(notess: notess);
   }
 }

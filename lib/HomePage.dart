@@ -1,6 +1,7 @@
 import 'dart:ffi';
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:notepad/NotesInput.dart';
 import 'package:notepad/bottom_nav/Notes.dart';
 import 'package:notepad/bottom_nav/Todos.dart';
@@ -17,25 +18,30 @@ class Homepage extends StatefulWidget {
 }
 
 class _HomepageState extends State<Homepage> {
+  final todoList = Todo.todos();
   int _selectedIndex = 0;
+  final _addtodoitems = TextEditingController();
 
   void navigateBottomBar(int index) {
     setState(() {
       _selectedIndex = index;
     });
   }
-
-  void setAlert() {
-
+  void _addToDoItem(String toDo) {
+    setState(() {
+      todoList.add(Todo(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        todo: toDo,
+      ));
+    });
+    _addtodoitems.clear();
   }
 
-  void saveTodo() {
+  void setAlert() {}
 
-  }
+  void saveTodo() {}
 
   Future<String?> showAddTodoDialog(BuildContext context) async {
-    final _addtodoitem = TextEditingController();
-
     return await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
@@ -46,13 +52,14 @@ class _HomepageState extends State<Homepage> {
           children: [
             // Input field
             TextField(
-              controller: _addtodoitem,
+              style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w500),
+              controller: _addtodoitems,
               decoration: InputDecoration(
                 enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Colors.grey.shade700
-                  )
-                ),
+                    borderSide: BorderSide(color: Colors.white)),
                 labelText: 'Enter To-Do Item',
                 labelStyle: TextStyle(
                   color: Colors.grey,
@@ -60,8 +67,8 @@ class _HomepageState extends State<Homepage> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide(
-                    color: Colors.grey.shade700
-                  )
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
@@ -75,18 +82,21 @@ class _HomepageState extends State<Homepage> {
                   onTap: () => Navigator.pop(context),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade800,
-                      borderRadius: BorderRadius.circular(20)
-                    ),
+                        color: Colors.grey.shade800,
+                        borderRadius: BorderRadius.circular(20)),
                     child: Padding(
                       padding: const EdgeInsets.all(7.0),
                       child: Row(
                         children: [
-                          Icon(Icons.alarm_add, size: 16,color: Colors.black,),
+                          Icon(
+                            Icons.alarm_add,
+                            size: 16,
+                            color: Colors.black,
+                          ),
                           Text(
                             // Close dialog for now
-                            'Set Alerts',style: TextStyle(color: Colors.black),
-
+                            'Set Alerts',
+                            style: TextStyle(color: Colors.black),
                           ),
                         ],
                       ),
@@ -95,10 +105,12 @@ class _HomepageState extends State<Homepage> {
                 ),
                 // Save button
                 GestureDetector(
-                  onTap: () => Navigator.pop(context, _addtodoitem.text),
-                  child: Text
-                    ('SAVE',style: TextStyle(color: Colors.grey.shade700,
-                  fontSize: 20)),
+                  onTap: () {
+                    _addToDoItem(_addtodoitems.text);
+                  },
+                  child: Text('SAVE',
+                      style:
+                          TextStyle(color: Colors.grey.shade700, fontSize: 20)),
                 ),
               ],
             ),
@@ -107,7 +119,6 @@ class _HomepageState extends State<Homepage> {
       ),
     );
   }
-
 
   final List<Widget> _pages = [
     Notes(),
@@ -147,5 +158,5 @@ class _HomepageState extends State<Homepage> {
     );
   }
 
-}
 
+}

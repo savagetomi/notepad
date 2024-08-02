@@ -3,15 +3,30 @@ import 'package:ionicons/ionicons.dart';
 import 'package:notepad/models/notess.dart';
 import 'package:notepad/models/todos.dart';
 import 'package:notepad/todoItem.dart';
+import 'dart:core';
 
-class Todos extends StatelessWidget {
+class Todos extends StatefulWidget {
   const Todos({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final todoList = Todo.todos();
-    final _searchcontroller = TextEditingController();
+  State<Todos> createState() => _TodosState();
+}
 
+class _TodosState extends State<Todos> {
+  final todoList = Todo.todos();
+  final _searchcontroller = TextEditingController();
+  List<Todo> _foundToDo = [];
+  final _todoController = TextEditingController();
+
+  @override
+  void initState() {
+    _foundToDo = todoList;
+    super.initState();
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black.withOpacity(0.8),
       appBar: AppBar(
@@ -72,6 +87,7 @@ class Todos extends StatelessWidget {
                         Expanded(
                           child: TextField(
                             style: TextStyle(color: Colors.grey),
+                            onChanged: (value) => _runFilter(value),
                             controller: _searchcontroller,
                             decoration: InputDecoration(
                               border: InputBorder.none,
@@ -89,11 +105,16 @@ class Todos extends StatelessWidget {
               SizedBox(
                 height: 10,
               ),
-              ListView(
-                children: [
-                  for( Todo todo in todoList )
-                    Todoitem(todos: todo,)
-                ],
+              Expanded(
+                child: ListView(
+                  children: [
+                    for( Todo todo in _foundToDo.reversed )
+                      Todoitem(todos: todo,
+                      onDeleteItem: _deleteToDoItem,
+                      onToDoChanged: _handleToDoChange,)
+                
+                  ],
+                ),
               )
 
             ],
@@ -103,7 +124,32 @@ class Todos extends StatelessWidget {
     );
   }
 
+  void _handleToDoChange (Todo todos){
+    setState((){
+      todos.isDone = !todos.isDone;
+    });
+  }
+  void _deleteToDoItem(String id) {
+    setState(() {
+      todoList.removeWhere((item) => item.id == id);
+    });
+  }
 
+  void _runFilter(String enteredKeyword) {
+    List<Todo> results = [];
+    if (enteredKeyword.isEmpty) {
+      results = todoList;
+    } else {
+      results = todoList
+          .where((item) => item.todo!
+          .toLowerCase()
+          .contains(enteredKeyword.toLowerCase()))
+          .toList();
+    }
 
+    setState(() {
+      _foundToDo = results;
+    });
+  }
 
 }
